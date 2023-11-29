@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/omelendrez/axis-assets.git"
+    "url": "https://github.com/omelendrez/axis-auto-backup"
   },
   "engines": {
     "node": ">=14.21.3 <=20.9.0",
@@ -23,7 +23,8 @@
     "axios": "^1.6.2",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "form-data": "^4.0.0"
+    "form-data": "^4.0.0",
+    "mysql2": "^3.6.5"
   },
   "devDependencies": {
     "eslint": "^8.54.0"

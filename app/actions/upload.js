@@ -1,6 +1,5 @@
 const fs = require('fs')
 const path = require('path')
-const { fileURLToPath } = require('url')
 const axios = require('axios')
 const FormData = require('form-data')
 
@@ -9,15 +8,13 @@ const up = (folders) =>
     const run = async () => {
       const assetsUrl = process.env.ASSETS_URL
       for (const currentFolder of folders) {
-        const fieldExtension = currentFolder.fieldExtension
+        const fileExtension = currentFolder.fileExtension
         const root = currentFolder.root
         const folderName = currentFolder.folderName
         const url = currentFolder.url
         const folder = `./${root}/${folderName}`
 
         let lastRecord = null
-
-        console.log(__dirname)
 
         const lastRecordFile = path.join(
           __dirname,
@@ -35,7 +32,7 @@ const up = (folders) =>
 
         const files = fs
           .readdirSync(path.join(__dirname, '..', folder))
-          .filter((f) => f.includes(fieldExtension))
+          .filter((f) => f.includes(fileExtension))
           .filter((f) => lastRecord && f < lastRecord)
           .reverse()
 
