@@ -1,15 +1,13 @@
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import axios from 'axios'
-import FormData from 'form-data'
+const fs = require('fs')
+const path = require('path')
+const { fileURLToPath } = require('url')
+const axios = require('axios')
+const FormData = require('form-data')
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-export const up = (folders) =>
+const up = (folders) =>
   new Promise((resolve) => {
-    ;(async () => {
+    const run = async () => {
+      const assetsUrl = process.env.ASSETS_URL
       for (const currentFolder of folders) {
         const fieldExtension = currentFolder.fieldExtension
         const root = currentFolder.root
@@ -19,19 +17,30 @@ export const up = (folders) =>
 
         let lastRecord = null
 
-        const lastRecordFile = path.join(__dirname, root, `${folderName}.txt`)
+        console.log(__dirname)
+
+        const lastRecordFile = path.join(
+          __dirname,
+          '..',
+          root,
+          `${folderName}.txt`
+        )
 
         if (fs.existsSync(lastRecordFile)) {
           lastRecord = await fs.readFileSync(lastRecordFile).toString()
+        } else {
+          lastRecord = 'zzzz'
+          await fs.writeFileSync(lastRecordFile, lastRecord)
         }
 
         const files = fs
-          .readdirSync(path.join(__dirname, folder))
+          .readdirSync(path.join(__dirname, '..', folder))
           .filter((f) => f.includes(fieldExtension))
           .filter((f) => lastRecord && f < lastRecord)
           .reverse()
 
-        let counter = 1
+        let exists = 0
+        let filesAdded = 0
         for (const file of files) {
           const formData = new FormData()
 
@@ -47,26 +56,31 @@ export const up = (folders) =>
             'Content-Type': 'multipart/form-data'
           }
 
-          counter++
-
           try {
-            const { data } = await axios.get(
-              `${process.env.ASSETS_URL}${folderName}/${file}/exists`
+            let { data } = await axios.get(
+              `${assetsUrl}${folderName}/${file}/exists`
             )
 
             if (!data.exists) {
-              await axios.post(`${process.env.ASSETS_URL}${url}`, formData, {
+              await axios.post(`${assetsUrl}${url}`, formData, {
                 headers
               })
+              filesAdded++
+            } else {
+              exists++
             }
           } catch (error) {
             console.log('error', error.message)
           }
           await fs.writeFileSync(lastRecordFile, file)
         }
-        console.log(`Upload from ${folder} complete! ${counter} files`)
-        await fs.writeFileSync(lastRecordFile, 'zzz')
+        console.log(
+          `Upload from ${folder} complete! ${filesAdded} files added, ${exists} files already exist`
+        )
       }
-    })()
+    }
+    run()
     resolve()
   })
+
+module.exports = { up }

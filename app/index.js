@@ -1,8 +1,8 @@
-import dotenv from 'dotenv'
-import express from 'express'
+const dotenv = require('dotenv')
+const express = require('express')
 
-// import { up } from './actions/upload'
-import { down } from './actions/download'
+const { up } = require('./actions/upload')
+const { down } = require('./actions/download')
 
 dotenv.config()
 
@@ -46,4 +46,6 @@ const FOLDERS = [
 // up(FOLDERS)
 // process.exit()
 
-down(FOLDERS)
+up(FOLDERS)
+
+// down(FOLDERS)
