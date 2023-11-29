@@ -8,9 +8,9 @@ const { documentNumber } = require('../helpers/format')
 const { FILENAME_FROM, DAYS_TO_UPDATE } = require('../helpers/constants')
 
 const localAssets = process.env.LOCAL_ASSETS_URL
+
 const remoteAssets = process.env.REMOTE_ASSETS_URL
 
-// download the image and save to /img
 const downloadDocument = function (url, dest, cb) {
   const destination = path.join(__dirname, '..', dest)
   let file = fs.createWriteStream(destination)
@@ -22,7 +22,7 @@ const downloadDocument = function (url, dest, cb) {
       })
     })
     .on('error', function (err) {
-      fs.unlink(destination) // Delete the file async if there is an error
+      fs.unlink(destination)
       if (cb) cb(err.message)
     })
 
