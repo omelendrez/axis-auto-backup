@@ -7,20 +7,20 @@ const pool = require('../models/db')
 const { documentNumber } = require('../helpers/format')
 const { FILENAME_FROM, DAYS_TO_UPDATE } = require('../helpers/constants')
 
-const localAssets = process.env.LOCAL_ASSETS_URL
-
+// const localAssets = process.env.LOCAL_ASSETS_URL
 const remoteAssets = process.env.REMOTE_ASSETS_URL
+const localAssetsServer = process.env.LOCAL_ASSETS_FOLDER
 
 // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const downloadDocument = function (url, dest, cb) {
-  const localAssetsServer = process.env.LOCAL_ASSETS_FOLDER
-  const destination = path.join(localAssetsServer, dest)
+const downloadDocument = function (url, destination, cb) {
   let file = fs.createWriteStream(destination)
+  console.log('downloading')
   let request = https
     .get(url, function (response) {
       response.pipe(file)
       file.on('finish', function () {
+        console.log('complete')
         file.close(cb)
       })
     })
@@ -39,21 +39,26 @@ const queryServers = (fileName, f) =>
     (async () => {
       // await delay(1000)
       const file = `${f.folderName}/${fileName}`
-      const localUrl = `${localAssets}${file}`
+      // const localUrl = `${localAssets}${file}`
       const remoteUrl = `${remoteAssets}${file}`
 
       const dest = `./${f.root}/${f.folderName}/${fileName}`
 
       const { data: remote } = await axios.get(`${remoteUrl}/exists`)
-      const { data: local } = await axios.get(`${localUrl}/exists`)
+      // const { data: local } = await axios.get(`${localUrl}/exists`)
 
-      if (remote.exists && !local.exists) {
-        downloadDocument(remoteUrl, dest, (err) => {
-          if (err) {
-            console.log(err)
-          }
-        })
-        resolve(`${f.root}/${file}`)
+      if (remote.exists) {
+        const destination = path.join(localAssetsServer, dest)
+        if (!fs.existsSync(destination)) {
+          downloadDocument(remoteUrl, destination, (err) => {
+            if (err) {
+              console.log(err)
+            }
+          })
+          resolve(`${f.root}/${file}`)
+        } else {
+          resolve()
+        }
       } else {
         resolve()
       }
@@ -63,6 +68,8 @@ const queryServers = (fileName, f) =>
 const doTrainingDocuments = (folders) =>
   new Promise((resolve) =>
     (async () => {
+      console.log('Training documents')
+
       const [trainings] = await pool.query(
         'SELECT DISTINCT training FROM training_tracking WHERE DATEDIFF(NOW(), updated)<?;',
         DAYS_TO_UPDATE
@@ -89,6 +96,8 @@ const doTrainingDocuments = (folders) =>
 const doLearnerDocuments = (folders) =>
   new Promise((resolve) =>
     (async () => {
+      console.log('Learners documents')
+
       const [learners] = await pool.query(
         'SELECT DISTINCT badge FROM learner WHERE id IN (SELECT learner FROM training WHERE id IN (SELECT DISTINCT training FROM training_tracking WHERE DATEDIFF(NOW(), updated)<?));',
         DAYS_TO_UPDATE
@@ -101,6 +110,7 @@ const doLearnerDocuments = (folders) =>
       for (const l of learners) {
         for (const f of learnerDocuments) {
           const fileName = `${l.badge}${f.fileExtension}`
+          console.log(`Checking ${fileName}`)
           const resp = await queryServers(fileName, f)
           if (resp) {
             console.log(resp)
@@ -114,6 +124,8 @@ const doLearnerDocuments = (folders) =>
 const doLearnerPhoto = (folders) =>
   new Promise((resolve) =>
     (async () => {
+      console.log('Training photographs')
+
       const destination = path.join(__dirname, '..', 'uploads', 'pictures')
 
       const lastPhoto = await fs
