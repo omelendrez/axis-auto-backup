@@ -1,4 +1,4 @@
-const DAYS_TO_UPDATE = 2
+const DAYS_TO_UPDATE = 10
 
 const FILENAME_FROM = {
   BADGE: 'BADGE',

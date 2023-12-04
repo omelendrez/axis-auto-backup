@@ -1,4 +1,6 @@
-const fs = require('fs')
+/* eslint-disable no-unused-vars */
+/* eslint-disable quotes */
+const fs = require('node:fs')
 const path = require('path')
 const https = require('https')
 const axios = require('axios')
@@ -15,7 +17,7 @@ const localAssetsServer = process.env.LOCAL_ASSETS_FOLDER
 
 const downloadDocument = function (url, destination, cb) {
   let file = fs.createWriteStream(destination)
-  console.log('downloading')
+  console.log(`downloading ${destination}`)
   let request = https
     .get(url, function (response) {
       response.pipe(file)
@@ -38,10 +40,11 @@ const queryServers = (fileName, f) =>
   new Promise((resolve) =>
     (async () => {
       // await delay(1000)
+
       const file = `${f.folderName}/${fileName}`
       // const localUrl = `${localAssets}${file}`
       const remoteUrl = `${remoteAssets}${file}`
-
+      console.log(`Checking ${file}`)
       const dest = `./${f.root}/${f.folderName}/${fileName}`
 
       const { data: remote } = await axios.get(`${remoteUrl}/exists`)
@@ -70,18 +73,22 @@ const doTrainingDocuments = (folders) =>
     (async () => {
       console.log('Training documents')
 
-      const [trainings] = await pool.query(
-        'SELECT DISTINCT training FROM training_tracking WHERE DATEDIFF(NOW(), updated)<?;',
-        DAYS_TO_UPDATE
-      )
+      // const [trainings] = await pool.query(
+      //   "SELECT id training FROM training WHERE start >= '2023-01-01'"
+      // )
 
       const trainingDocuments = folders.filter(
         (t) => t.filenameFrom === FILENAME_FROM.TRAINING_ID
       )
 
+      const trainings = await fs
+        .readFileSync('./training.txt')
+        .toString()
+        .split('\n')
+
       for (const t of trainings) {
         for (const f of trainingDocuments) {
-          const docNumber = await documentNumber(t.training)
+          const docNumber = await documentNumber(t)
           const fileName = `${docNumber}${f.fileExtension}`
           const resp = await queryServers(fileName, f)
           if (resp) {
@@ -98,19 +105,22 @@ const doLearnerDocuments = (folders) =>
     (async () => {
       console.log('Learners documents')
 
-      const [learners] = await pool.query(
-        'SELECT DISTINCT badge FROM learner WHERE id IN (SELECT learner FROM training WHERE id IN (SELECT DISTINCT training FROM training_tracking WHERE DATEDIFF(NOW(), updated)<?));',
-        DAYS_TO_UPDATE
-      )
+      // const [learners] = await pool.query(
+      //   "SELECT DISTINCT badge FROM learner WHERE id IN (SELECT DISTINCT learner FROM training WHERE start >= '2023-01-01');"
+      // )
 
       const learnerDocuments = folders.filter(
         (l) => l.filenameFrom === FILENAME_FROM.BADGE
       )
 
+      const learners = await fs
+        .readFileSync('./learner.txt')
+        .toString()
+        .split('\n')
+
       for (const l of learners) {
         for (const f of learnerDocuments) {
-          const fileName = `${l.badge}${f.fileExtension}`
-          console.log(`Checking ${fileName}`)
+          const fileName = `${l}${f.fileExtension}`
           const resp = await queryServers(fileName, f)
           if (resp) {
             console.log(resp)
@@ -154,17 +164,17 @@ const doLearnerPhoto = (folders) =>
 const down = (folders) =>
   new Promise((resolve) =>
     (async () => {
-      const t = await doTrainingDocuments(folders)
-      console.log(t)
-      console.log()
+      // const t = await doTrainingDocuments(folders)
+      // console.log(t)
+      // console.log()
 
       const l = await doLearnerDocuments(folders)
       console.log(l)
       console.log()
 
-      const p = await doLearnerPhoto(folders)
-      console.log(p)
-      console.log()
+      // const p = await doLearnerPhoto(folders)
+      // console.log(p)
+      // console.log()
 
       resolve('Download process completed successfuly.')
     })()
