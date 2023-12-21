@@ -1,6 +1,10 @@
 const { api } = require('../services/api-service')
 
-const getDownloadPendingDocumets = async () =>
+/**
+ * Calls backend api to get s3_document table results
+ * @returns List of s3 documents pending to process
+ */
+const getDownloadPendingDocuments = async () =>
   new Promise((resolve, reject) =>
     api
       .get('s3-document?status=0')
@@ -8,4 +12,4 @@ const getDownloadPendingDocumets = async () =>
       .catch((err) => reject(err))
   )
 
-module.exports = { getDownloadPendingDocumets }
+module.exports = { getDownloadPendingDocuments }

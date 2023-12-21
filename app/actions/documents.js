@@ -1,9 +1,15 @@
 const { getDocumentUrl } = require('../services/s3-service')
-const { getDownloadPendingDocumets } = require('./api')
+const { getDownloadPendingDocuments } = require('./api')
 
 const fs = require('node:fs')
 const https = require('https')
 
+/**
+ * Downooads files from S3
+ * @param {string} url
+ * @param {string} destination
+ * @param {function} cb
+ */
 const download = function (url, destination, cb) {
   if (!fs.existsSync(destination)) {
     const file = fs.createWriteStream(destination)
@@ -28,7 +34,7 @@ const download = function (url, destination, cb) {
 
 const getDocuments = () =>
   new Promise((resolve, reject) =>
-    getDownloadPendingDocumets()
+    getDownloadPendingDocuments()
       .then((response) => resolve(response))
       .catch((error) => reject(error))
   )
