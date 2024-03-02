@@ -4,5 +4,5 @@ module.exports = {
     EXISTS: 'exists',
     ERROR: 'error'
   },
-  DOWNLOAD_FREQUECY: 1000 * 60 * 10 // 10 minutes
+  DOWNLOAD_FREQUENCY: 1000 * 60 * 10 // 10 minutes
 }
