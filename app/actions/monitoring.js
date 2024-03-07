@@ -23,12 +23,14 @@ const start = () => {
           file
         )
 
-        // gets the document url with s3-request-presigner.getSignedUrl
+        // gets the document url with s3-request-pre-signer.getSignedUrl
         await getDocumentURL(doc.file)
           .then(async (url) => {
-            //  converts the file url to strem and stores in destination foler
+            //  converts the file url to stream and stores in destination folder
             await download(url, destination, (res) => {
-              console.log(res.message)
+              if (res.status !== FILE_STATUS.EXISTS) {
+                console.log(res.message)
+              }
               if (res.status !== FILE_STATUS.ERROR) {
                 // changes record status in s3-document table to '1'
                 api.put('s3-document', { file, status: 1 })
