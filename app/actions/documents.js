@@ -6,7 +6,7 @@ const https = require('https')
 const { FILE_STATUS } = require('../utils/constants')
 
 /**
- * Downooads files from S3
+ * Download files from S3
  * @param {string} url
  * @param {string} destination
  * @param {function} cb

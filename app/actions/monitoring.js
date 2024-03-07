@@ -1,4 +1,5 @@
 const path = require('path')
+require('dotenv').config()
 const { api } = require('../services/api-service')
 const { getDocuments, getDocumentURL, download } = require('./documents')
 const { FILE_STATUS } = require('../utils/constants')
@@ -10,18 +11,14 @@ const start = () => {
   // gets the list of s3-document table records having status=0
   // endpoint sends 50 records per call
   getDocuments()
-    .then((docs) => {
-      docs.forEach(async (doc) => {
+    .then(async (docs) => {
+      if (docs.length === 0) {
+        return console.log('No pending documents to download')
+      }
+      await docs.forEach(async (doc) => {
         const file = doc.file
         // sets the file full path to assets documents folders
-        const destination = path.join(
-          __dirname,
-          '..',
-          '..',
-          '..',
-          'axis-assets',
-          file
-        )
+        const destination = path.join(process.env.DOCUMENTS_FOLDER_URI, file)
 
         // gets the document url with s3-request-pre-signer.getSignedUrl
         await getDocumentURL(doc.file)
