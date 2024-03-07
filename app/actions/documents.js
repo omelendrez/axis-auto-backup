@@ -3,6 +3,7 @@ const { getDownloadPendingDocuments } = require('./api')
 
 const fs = require('node:fs')
 const https = require('https')
+const { FILE_STATUS } = require('../utils/constants')
 
 /**
  * Downooads files from S3
@@ -15,20 +16,32 @@ const download = function (url, destination, cb) {
     const file = fs.createWriteStream(destination)
 
     const request = https
-      .get(url, function (response) {
+      .get(url, (response) => {
         response.pipe(file)
         file.on('finish', function () {
-          file.close(cb)
+          if (cb)
+            cb({ status: FILE_STATUS.OK, message: `${destination} downloaded` })
+          file.close()
         })
       })
-      .on('error', function (err) {
+      .on('error', (err) => {
         fs.unlink(destination)
-        if (cb) cb(err.message)
+        if (cb)
+          cb({
+            status: FILE_STATUS.ERROR,
+            message: `${destination} ${err.message}`
+          })
       })
 
     request.on('error', function (err) {
-      console.log(err)
+      if (cb)
+        cb({
+          status: FILE_STATUS.ERROR,
+          message: `${destination} ${err.message}`
+        })
     })
+  } else {
+    cb({ status: FILE_STATUS.EXISTS, message: `${destination} already exists` })
   }
 }
 
