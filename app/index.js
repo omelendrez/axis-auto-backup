@@ -2,14 +2,17 @@ require('dotenv').config()
 
 const { start } = require('./actions/monitoring')
 const { DOWNLOAD_FREQUENCY } = require('./utils/constants')
+const { isWorkingTime } = require('./utils/helpers')
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
-const repeat = 1 === 1
+const repeat = true
 
 ;(async () => {
   do {
-    console.log(new Date())
-    start()
-    // await sleep(1000 * 60 * 15)
+    const now = new Date()
+    if (isWorkingTime(now)) {
+      console.log(now)
+      start()
+    }
     await sleep(DOWNLOAD_FREQUENCY)
   } while (repeat)
 })()
