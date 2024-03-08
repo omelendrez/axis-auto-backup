@@ -4,5 +4,7 @@ module.exports = {
     EXISTS: 'exists',
     ERROR: 'error'
   },
-  DOWNLOAD_FREQUENCY: 1000 * 60 * 10 // 10 minutes
+  WORKING_TIME_RANGE: { FROM: 8, TO: 18 }, // 8am to 6pm
+  WORKING_WEEK_DAYS: [1, 2, 3, 4, 5], // Monday to Friday
+  DOWNLOAD_FREQUENCY: 1000 * 60 * 60 // every hour
 }
