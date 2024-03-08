@@ -10,6 +10,4 @@ const api = axios.create({
   }
 })
 
-console.log(process.env.API_URL)
-
 module.exports = { api }
