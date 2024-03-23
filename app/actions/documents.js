@@ -1,4 +1,4 @@
-const { getDocumentUrl } = require('../services/s3-service')
+const { getDocumentUrl } = require('../services/file-service')
 const { getDownloadPendingDocuments } = require('./api')
 
 const fs = require('node:fs')
@@ -12,37 +12,37 @@ const { FILE_STATUS } = require('../utils/constants')
  * @param {function} cb
  */
 const download = function (url, destination, cb) {
-  if (!fs.existsSync(destination)) {
-    const file = fs.createWriteStream(destination)
+  // if (!fs.existsSync(destination)) {
+  const file = fs.createWriteStream(destination)
 
-    const request = https
-      .get(url, (response) => {
-        response.pipe(file)
-        file.on('finish', function () {
-          if (cb)
-            cb({ status: FILE_STATUS.OK, message: `${destination} downloaded` })
-          file.close()
-        })
-      })
-      .on('error', (err) => {
-        fs.unlink(destination)
+  const request = https
+    .get(url, (response) => {
+      response.pipe(file)
+      file.on('finish', function () {
         if (cb)
-          cb({
-            status: FILE_STATUS.ERROR,
-            message: `${destination} ${err.message}`
-          })
+          cb({ status: FILE_STATUS.OK, message: `${destination} downloaded` })
+        file.close()
       })
-
-    request.on('error', function (err) {
+    })
+    .on('error', (err) => {
+      fs.unlink(destination)
       if (cb)
         cb({
           status: FILE_STATUS.ERROR,
           message: `${destination} ${err.message}`
         })
     })
-  } else {
-    cb({ status: FILE_STATUS.EXISTS, message: `${destination} already exists` })
-  }
+
+  request.on('error', function (err) {
+    if (cb)
+      cb({
+        status: FILE_STATUS.ERROR,
+        message: `${destination} ${err.message}`
+      })
+  })
+  // } else {
+  //   cb({ status: FILE_STATUS.EXISTS, message: `${destination} already exists` })
+  // }
 }
 
 const getDocuments = () =>

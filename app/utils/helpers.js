@@ -1,13 +1,9 @@
 const { WORKING_TIME_RANGE, WORKING_WEEK_DAYS } = require('./constants')
+const { getDateValues } = require('./format')
 
 module.exports = {
   isWorkingTime: (currentDate) => {
-    const weekDay = currentDate.getDay()
-    const userLocalTime = currentDate.toLocaleString('en-GB', {
-      timeZone: 'Africa/Lagos'
-    })
-    const time = userLocalTime.split(', ').pop()
-    const hour = parseInt(time.split(':')[0], 10)
+    const { weekDay, hour } = getDateValues(currentDate)
 
     return (
       WORKING_WEEK_DAYS.includes(weekDay) &&
